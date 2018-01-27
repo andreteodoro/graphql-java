@@ -2,6 +2,7 @@ package com.graphql.demo.graphql;
 
 import com.coxautodev.graphql.tools.SchemaParser;
 import com.graphql.demo.repository.LinkRepository;
+import com.graphql.demo.repository.UserRepository;
 import com.graphql.demo.resolvers.Mutation;
 import com.graphql.demo.resolvers.Query;
 import com.mongodb.MongoClient;
@@ -15,12 +16,12 @@ import javax.servlet.annotation.WebServlet;
 public class GraphQLEndpoint extends SimpleGraphQLServlet {
 
     private static final LinkRepository linkRepository;
+    private static final UserRepository userRepository;
 
     static {
-        //Change to `new MongoClient("mongodb://<host>:<port>/hackernews")`
-        //if you don't have Mongo running locally on port 27017
         final MongoDatabase mongo = new MongoClient().getDatabase("graphql-java");
         linkRepository = new LinkRepository(mongo.getCollection("links"));
+        userRepository = new UserRepository(mongo.getCollection("users"));
     }
 
     public GraphQLEndpoint() {
@@ -30,7 +31,7 @@ public class GraphQLEndpoint extends SimpleGraphQLServlet {
     private static GraphQLSchema buildSchema() {
         return SchemaParser.newParser()
                 .file("schema.graphqls")
-                .resolvers(new Query(linkRepository), new Mutation(linkRepository))
+                .resolvers(new Query(linkRepository), new Mutation(linkRepository, userRepository))
                 .build()
                 .makeExecutableSchema();
     }
