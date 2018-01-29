@@ -15,6 +15,7 @@
             width: 100%;
             overflow: hidden;
         }
+
         #graphiql {
             height: 100vh;
         }
@@ -37,7 +38,7 @@
       copy them directly into your environment, or perhaps include them in your
       favored resource bundler.
      -->
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/graphiql@0.11.2/graphiql.css" />
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/graphiql@0.11.2/graphiql.css"/>
     <script src="//cdn.jsdelivr.net/npm/graphiql@0.11.2/graphiql.js"></script>
 
 </head>
@@ -95,11 +96,11 @@
 
     function updateURL() {
         var newSearch = '?' + Object.keys(parameters).filter(function (key) {
-                return Boolean(parameters[key]);
-            }).map(function (key) {
-                return encodeURIComponent(key) + '=' +
-                    encodeURIComponent(parameters[key]);
-            }).join('&');
+            return Boolean(parameters[key]);
+        }).map(function (key) {
+            return encodeURIComponent(key) + '=' +
+                encodeURIComponent(parameters[key]);
+        }).join('&');
         history.replaceState(null, null, newSearch);
     }
 
@@ -114,6 +115,7 @@
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
+                'Authorization': 'Bearer 5a6f5e0dda926631355eabc8',
             },
             body: JSON.stringify(graphQLParams),
             credentials: 'include',
