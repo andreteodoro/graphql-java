@@ -2,8 +2,8 @@ package com.graphql.demo.repository;
 
 import com.graphql.demo.model.Link;
 import com.graphql.demo.model.LinkFilter;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
-import graphql.execution.batched.Batched;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -27,12 +27,12 @@ public class LinkRepository {
         return link(doc);
     }
 
-    @Batched
-    public List<Link> getAllLinks(final LinkFilter filter) {
+    public List<Link> getAllLinks(final LinkFilter filter, final int skip, final int first) {
         final Optional<Bson> mongoFilter = Optional.ofNullable(filter).map(this::buildFilter);
 
         final List<Link> allLinks = new ArrayList<>();
-        for (final Document doc : mongoFilter.map(links::find).orElseGet(links::find)) {
+        final FindIterable<Document> documents = mongoFilter.map(links::find).orElseGet(links::find);
+        for (final Document doc : documents.skip(skip).limit(first)) {
             allLinks.add(link(doc));
         }
         return allLinks;
@@ -44,13 +44,6 @@ public class LinkRepository {
         doc.append("description", link.getDescription());
         doc.append("postedBy", link.getUserId());
         links.insertOne(doc);
-    }
-
-    private Link link(final Document doc) {
-        return new Link(
-                doc.get("_id").toString(),
-                doc.getString("url"),
-                doc.getString("description"));
     }
 
     private Bson buildFilter(final LinkFilter filter) {
@@ -68,5 +61,13 @@ public class LinkRepository {
             return and(descriptionCondition, urlCondition);
         }
         return descriptionCondition != null ? descriptionCondition : urlCondition;
+    }
+
+    private Link link(final Document doc) {
+        return new Link(
+                doc.get("_id").toString(),
+                doc.getString("url"),
+                doc.getString("description"),
+                doc.getString("postedBy"));
     }
 }
