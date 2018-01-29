@@ -2,13 +2,12 @@ package com.graphql.demo.graphql;
 
 import com.coxautodev.graphql.tools.SchemaParser;
 import com.graphql.demo.model.AuthContext;
+import com.graphql.demo.model.Scalars;
 import com.graphql.demo.model.User;
 import com.graphql.demo.repository.LinkRepository;
 import com.graphql.demo.repository.UserRepository;
-import com.graphql.demo.resolvers.LinkResolver;
-import com.graphql.demo.resolvers.Mutation;
-import com.graphql.demo.resolvers.Query;
-import com.graphql.demo.resolvers.SigninResolver;
+import com.graphql.demo.repository.VoteRepository;
+import com.graphql.demo.resolvers.*;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import graphql.schema.GraphQLSchema;
@@ -25,11 +24,13 @@ public class GraphQLEndpoint extends SimpleGraphQLServlet {
 
     private static final LinkRepository linkRepository;
     private static final UserRepository userRepository;
+    private static final VoteRepository voteRepository;
 
     static {
         final MongoDatabase mongo = new MongoClient().getDatabase("graphql-java");
         linkRepository = new LinkRepository(mongo.getCollection("links"));
         userRepository = new UserRepository(mongo.getCollection("users"));
+        voteRepository = new VoteRepository(mongo.getCollection("votes"));
     }
 
     public GraphQLEndpoint() {
@@ -41,9 +42,11 @@ public class GraphQLEndpoint extends SimpleGraphQLServlet {
                 .file("schema.graphqls")
                 .resolvers(
                         new Query(linkRepository),
-                        new Mutation(linkRepository, userRepository),
+                        new Mutation(linkRepository, userRepository, voteRepository),
                         new SigninResolver(),
-                        new LinkResolver(userRepository))
+                        new LinkResolver(userRepository),
+                        new VoteResolver(linkRepository, userRepository))
+                .scalars(Scalars.dateTime)
                 .build()
                 .makeExecutableSchema();
     }
